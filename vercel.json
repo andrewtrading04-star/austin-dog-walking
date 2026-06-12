@@ -1,7 +1,4 @@
 {
-  "name": "austin-dog-walking",
-  "version": 2,
   "buildCommand": "exit 0",
-  "outputDirectory": ".",
-  "framework": "static"
+  "outputDirectory": "."
 }
