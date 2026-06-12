@@ -703,40 +703,45 @@
         }
 
         function calculatePricing() {
+            if (!data.startDate || !data.endDate || !data.service) {
+                document.getElementById('priceService').textContent = '—';
+                document.getElementById('priceMeetGreet').textContent = '—';
+                document.getElementById('priceWeekend').textContent = '—';
+                document.getElementById('priceTotal').textContent = '$0';
+                return;
+            }
+
             const start = new Date(data.startDate);
             const end = new Date(data.endDate);
             const numDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+            const totalPets = data.dogQty + data.catQty;
 
             let servicePrice = 0;
-            let serviceName = '';
             let visits = 0;
 
             if (data.service === '30min-walk') {
                 servicePrice = 30;
-                serviceName = '30-Min Walk';
-                visits = numDays * (data.dogQty + data.catQty);
+                visits = numDays * totalPets;
             } else if (data.service === '60min-walk') {
                 servicePrice = 55;
-                serviceName = '60-Min Walk';
-                visits = numDays * (data.dogQty + data.catQty);
+                visits = numDays * totalPets;
             } else if (data.service === 'daily-dropins') {
                 servicePrice = 40;
-                serviceName = 'Daily Drop-In';
-                visits = numDays * (data.dogQty + data.catQty);
+                visits = numDays * totalPets;
             } else if (data.service === 'overnight-sitting') {
                 servicePrice = 85;
-                serviceName = 'Overnight Sitting';
                 visits = numDays;
             }
 
-            let total = servicePrice * visits;
+            let serviceTotal = servicePrice * visits;
             let meetGreetCost = data.meetGreet === 'yes' ? 25 : 0;
-            let weekendCost = Math.round(total * 0.15);
+            let weekendCost = Math.round(serviceTotal * 0.15);
+            let grandTotal = serviceTotal + meetGreetCost + weekendCost;
 
-            document.getElementById('priceService').textContent = visits > 0 ? `${visits} × $${servicePrice}` : '—';
+            document.getElementById('priceService').textContent = visits > 0 ? `${visits} × $${servicePrice} = $${serviceTotal}` : '—';
             document.getElementById('priceMeetGreet').textContent = meetGreetCost > 0 ? `$${meetGreetCost}` : '—';
             document.getElementById('priceWeekend').textContent = weekendCost > 0 ? `+$${weekendCost}` : '—';
-            document.getElementById('priceTotal').textContent = `$${total + meetGreetCost + weekendCost}`;
+            document.getElementById('priceTotal').textContent = `$${grandTotal}`;
         }
 
         nextBtn.addEventListener('click', async () => {
