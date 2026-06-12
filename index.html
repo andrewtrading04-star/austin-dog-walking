@@ -624,6 +624,10 @@
             updateProgress();
             nextBtn.disabled = false;
             nextBtn.textContent = stepNum === questions.length - 1 ? 'Submit' : 'Next';
+            // Populate the review screen as soon as we land on it
+            if (stepNum === questions.length - 1) {
+                updateReview();
+            }
         }
 
         function validateStep() {
