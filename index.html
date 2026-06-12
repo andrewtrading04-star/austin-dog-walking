@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Austin Dog Walking - Book a Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f1f4f1 0%, #ffffff 100%);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .widget-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(44, 62, 80, 0.12);
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2C3E50;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: #636e72;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f1f4f1;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .step-counter {
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .step-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .question {
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        .question h2 {
+            font-size: 24px;
+            color: #2C3E50;
+            margin-bottom: 24px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn-option {
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2C3E50;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .btn-option:hover {
+            border-color: #4CAF50;
+            background: #f1f4f1;
+            transform: translateY(-2px);
+        }
+
+        .btn-option.selected {
+            border-color: #4CAF50;
+            background: #f1f4f1;
+            color: #4CAF50;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2C3E50;
+            transition: all 0.3s;
+        }
+
+        .checkbox-option:hover {
+            border-color: #4CAF50;
+            background: #f1f4f1;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+
+        .checkbox-option.selected {
+            border-color: #4CAF50;
+            background: #f1f4f1;
+        }
+
+        .quantity-input {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .quantity-input label {
+            font-weight: 500;
+            flex: 1;
+            color: #2C3E50;
+        }
+
+        .quantity-input input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e8e8e8;
+            border-radius: 6px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .quantity-input input:focus {
+            border-color: #4CAF50;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .date-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2C3E50;
+            font-size: 14px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-next {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-next:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-back {
+            background: #f1f4f1;
+            color: #2C3E50;
+            border: 2px solid #e8e8e8;
+        }
+
+        .btn-back:hover {
+            background: #e8e8e8;
+            border-color: #4CAF50;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .review-section {
+            display: none;
+            background: #f1f4f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .review-section.show {
+            display: block;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .review-item label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .review-item value {
+            color: #2C3E50;
+            font-weight: 600;
+        }
+
+        .pricing-box {
+            background: #f1f4f1;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .pricing-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2C3E50;
+        }
+
+        .pricing-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4CAF50;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .thank-you {
+            display: none;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+
+        .thank-you.show {
+            display: block;
+        }
+
+        .thank-you-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .thank-you h2 {
+            font-size: 28px;
+            color: #2C3E50;
+            margin-bottom: 12px;
+        }
+
+        .thank-you p {
+            color: #636e72;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .thank-you .confirmation {
+            background: #f1f4f1;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            font-size: 14px;
+            color: #2C3E50;
+            margin: 20px 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-desc {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 600px) {
+            .widget-container {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <div class="header">
+            <h1>🐕 Book Your Dog Walk</h1>
+            <p>Professional dog walking & pet sitting in Austin</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="step-counter">
+            <span id="stepCount">Step 1 of 8</span>
+        </div>
+
+        <!-- Question 1: Zip Code -->
+        <div class="question active">
+            <div class="step-icon">📍</div>
+            <h2>What's your zip code?</h2>
+            <div class="options">
+                <input type="text" id="zipInput" placeholder="e.g., 78704" maxlength="5">
+                <div class="error" id="zipError"></div>
+            </div>
+        </div>
+
+        <!-- Question 2: Pet Type -->
+        <div class="question">
+            <div class="step-icon">🐶</div>
+            <h2>What pets do you have?</h2>
+            <div class="options">
+                <label class="checkbox-option">
+                    <input type="checkbox" value="Dog" class="petType"> Dogs
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" value="Cat" class="petType"> Cats
+                </label>
+            </div>
+            <div class="error" id="petError"></div>
+        </div>
+
+        <!-- Question 3: Dog Quantity -->
+        <div class="question" id="dogQtyQuestion">
+            <div class="step-icon">🐕🐕</div>
+            <h2>How many dogs?</h2>
+            <div class="options">
+                <div class="quantity-input">
+                    <label>Dogs:</label>
+                    <input type="number" id="dogQtyInput" min="1" max="4" value="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 4: Cat Quantity -->
+        <div class="question" id="catQtyQuestion">
+            <div class="step-icon">😺😺</div>
+            <h2>How many cats?</h2>
+            <div class="options">
+                <div class="quantity-input">
+                    <label>Cats:</label>
+                    <input type="number" id="catQtyInput" min="1" max="4" value="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 5: Service Type -->
+        <div class="question">
+            <div class="step-icon">⏱️</div>
+            <h2>Type of visit?</h2>
+            <div class="options">
+                <button type="button" class="btn-option" data-service="30min-walk">
+                    30-Min Walk
+                    <div class="service-desc">$30 per walk</div>
+                </button>
+                <button type="button" class="btn-option" data-service="60min-walk">
+                    60-Min Walk
+                    <div class="service-desc">$55 per walk (most popular)</div>
+                </button>
+                <button type="button" class="btn-option" data-service="daily-dropins">
+                    Daily Drop-In Visits
+                    <div class="service-desc">$40 per visit</div>
+                </button>
+                <button type="button" class="btn-option" data-service="overnight-sitting">
+                    Overnight Pet Sitting
+                    <div class="service-desc">$85 per night</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 6: Dates -->
+        <div class="question">
+            <div class="step-icon">📅</div>
+            <h2>What dates do you need service?</h2>
+            <div class="options">
+                <label class="date-label">Start Date</label>
+                <input type="date" id="startDate" class="date-input">
+                <label class="date-label" style="margin-top: 16px;">End Date</label>
+                <input type="date" id="endDate" class="date-input">
+            </div>
+        </div>
+
+        <!-- Question 7: Meet & Greet -->
+        <div class="question">
+            <div class="step-icon">👋</div>
+            <h2>Meet and greet?</h2>
+            <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 16px;">Let us get to know your pet first (+$25)</p>
+            <div class="options">
+                <button type="button" class="btn-option" data-meetgreet="yes">Yes, schedule one</button>
+                <button type="button" class="btn-option" data-meetgreet="no">Not needed</button>
+            </div>
+        </div>
+
+        <!-- Question 8: Review & Submit -->
+        <div class="question">
+            <div class="step-icon">✅</div>
+            <h2>Review your booking</h2>
+            <div class="review-section show">
+                <div class="review-item">
+                    <label>Location:</label>
+                    <value id="reviewZip">—</value>
+                </div>
+                <div class="review-item">
+                    <label>Pets:</label>
+                    <value id="reviewPets">—</value>
+                </div>
+                <div class="review-item">
+                    <label>Service:</label>
+                    <value id="reviewService">—</value>
+                </div>
+                <div class="review-item">
+                    <label>Dates:</label>
+                    <value id="reviewDates">—</value>
+                </div>
+                <div class="review-item">
+                    <label>Meet & Greet:</label>
+                    <value id="reviewMeetGreet">—</value>
+                </div>
+                <div class="pricing-box">
+                    <div class="pricing-item">
+                        <span>Service:</span>
+                        <span id="priceService">—</span>
+                    </div>
+                    <div class="pricing-item">
+                        <span>Meet & Greet:</span>
+                        <span id="priceMeetGreet">—</span>
+                    </div>
+                    <div class="pricing-item">
+                        <span>Weekend surcharge:</span>
+                        <span id="priceWeekend">—</span>
+                    </div>
+                    <div class="pricing-total">
+                        Estimated: <span id="priceTotal">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thank You Screen -->
+        <div class="thank-you">
+            <div class="thank-you-icon">✅</div>
+            <h2>Request received!</h2>
+            <p>Thanks for choosing Austin Dog Walking.</p>
+            <div class="confirmation">
+                📧 Confirmation email sent to<br><strong>catieauchter@gmail.com</strong>
+            </div>
+            <p>We'll reach out within 24 hours to confirm your appointment and answer any questions.</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="buttons" id="buttonContainer">
+            <button type="button" class="btn-back" id="backBtn" style="display: none;">← Back</button>
+            <button type="button" class="btn-next" id="nextBtn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const DENVER_PREFIXES = ['80', '81', '82'];
+        const data = {
+            zip: '',
+            pets: [],
+            dogQty: 0,
+            catQty: 0,
+            service: '',
+            startDate: '',
+            endDate: '',
+            meetGreet: ''
+        };
+
+        let currentStep = 0;
+        const questions = document.querySelectorAll('.question');
+        const progressFill = document.querySelector('.progress-fill');
+        const stepCount = document.getElementById('stepCount');
+        const backBtn = document.getElementById('backBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const thankYou = document.querySelector('.thank-you');
+
+        function updateProgress() {
+            const total = questions.length;
+            const percent = ((currentStep + 1) / total) * 100;
+            progressFill.style.width = percent + '%';
+            stepCount.textContent = `Step ${currentStep + 1} of ${total}`;
+            backBtn.style.display = currentStep > 0 ? 'block' : 'none';
+        }
+
+        function showStep(stepNum) {
+            questions.forEach((q, i) => {
+                q.classList.toggle('active', i === stepNum);
+            });
+            updateProgress();
+            nextBtn.disabled = false;
+            nextBtn.textContent = stepNum === questions.length - 1 ? 'Submit' : 'Next';
+        }
+
+        function validateStep() {
+            document.querySelectorAll('.error').forEach(e => e.classList.remove('show'));
+
+            if (currentStep === 0) {
+                const zip = document.getElementById('zipInput').value.trim();
+                if (!zip) {
+                    document.getElementById('zipError').textContent = 'Please enter a zip code';
+                    document.getElementById('zipError').classList.add('show');
+                    return false;
+                }
+                if (!/^\d{5}$/.test(zip)) {
+                    document.getElementById('zipError').textContent = 'Please enter a valid 5-digit zip code';
+                    document.getElementById('zipError').classList.add('show');
+                    return false;
+                }
+                data.zip = zip;
+                return true;
+            }
+
+            if (currentStep === 1) {
+                const selected = document.querySelectorAll('.petType:checked');
+                if (selected.length === 0) {
+                    document.getElementById('petError').textContent = 'Please select at least one pet type';
+                    document.getElementById('petError').classList.add('show');
+                    return false;
+                }
+                data.pets = Array.from(selected).map(c => c.value);
+                return true;
+            }
+
+            if (currentStep === 2) {
+                const qty = parseInt(document.getElementById('dogQtyInput').value);
+                if (qty < 1 || qty > 4) return false;
+                data.dogQty = qty;
+                return true;
+            }
+
+            if (currentStep === 3) {
+                const qty = parseInt(document.getElementById('catQtyInput').value);
+                if (qty < 1 || qty > 4) return false;
+                data.catQty = qty;
+                return true;
+            }
+
+            if (currentStep === 4) {
+                return data.service !== '';
+            }
+
+            if (currentStep === 5) {
+                if (!data.startDate || !data.endDate) return false;
+                if (new Date(data.startDate) > new Date(data.endDate)) return false;
+                return true;
+            }
+
+            if (currentStep === 6) {
+                return data.meetGreet !== '';
+            }
+
+            if (currentStep === 7) {
+                updateReview();
+                return true;
+            }
+
+            return true;
+        }
+
+        function updateReview() {
+            document.getElementById('reviewZip').textContent = data.zip;
+            document.getElementById('reviewPets').textContent = `${data.dogQty > 0 ? data.dogQty + ' Dog(s)' : ''}${data.dogQty > 0 && data.catQty > 0 ? ', ' : ''}${data.catQty > 0 ? data.catQty + ' Cat(s)' : ''}`;
+            document.getElementById('reviewService').textContent = data.service.replace(/-/g, ' ').toUpperCase();
+            document.getElementById('reviewDates').textContent = `${data.startDate} to ${data.endDate}`;
+            document.getElementById('reviewMeetGreet').textContent = data.meetGreet === 'yes' ? 'Yes (+$25)' : 'No';
+
+            calculatePricing();
+        }
+
+        function calculatePricing() {
+            const start = new Date(data.startDate);
+            const end = new Date(data.endDate);
+            const numDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+
+            let servicePrice = 0;
+            let serviceName = '';
+            let visits = 0;
+
+            if (data.service === '30min-walk') {
+                servicePrice = 30;
+                serviceName = '30-Min Walk';
+                visits = numDays * (data.dogQty + data.catQty);
+            } else if (data.service === '60min-walk') {
+                servicePrice = 55;
+                serviceName = '60-Min Walk';
+                visits = numDays * (data.dogQty + data.catQty);
+            } else if (data.service === 'daily-dropins') {
+                servicePrice = 40;
+                serviceName = 'Daily Drop-In';
+                visits = numDays * (data.dogQty + data.catQty);
+            } else if (data.service === 'overnight-sitting') {
+                servicePrice = 85;
+                serviceName = 'Overnight Sitting';
+                visits = numDays;
+            }
+
+            let total = servicePrice * visits;
+            let meetGreetCost = data.meetGreet === 'yes' ? 25 : 0;
+            let weekendCost = Math.round(total * 0.15);
+
+            document.getElementById('priceService').textContent = visits > 0 ? `${visits} × $${servicePrice}` : '—';
+            document.getElementById('priceMeetGreet').textContent = meetGreetCost > 0 ? `$${meetGreetCost}` : '—';
+            document.getElementById('priceWeekend').textContent = weekendCost > 0 ? `+$${weekendCost}` : '—';
+            document.getElementById('priceTotal').textContent = `$${total + meetGreetCost + weekendCost}`;
+        }
+
+        nextBtn.addEventListener('click', async () => {
+            if (!validateStep()) return;
+
+            if (currentStep < questions.length - 1) {
+                currentStep++;
+                if (currentStep === 2 && !data.pets.includes('Dog')) currentStep++;
+                if (currentStep === 3 && !data.pets.includes('Cat')) currentStep++;
+                showStep(currentStep);
+            } else {
+                nextBtn.disabled = true;
+                document.querySelector('.question.active').classList.remove('active');
+                document.getElementById('buttonContainer').style.display = 'none';
+                thankYou.classList.add('show');
+                // TODO: Send email here
+                console.log('Booking data:', data);
+            }
+        });
+
+        backBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                if (currentStep === 3 && !data.pets.includes('Cat')) currentStep--;
+                if (currentStep === 2 && !data.pets.includes('Dog')) currentStep--;
+                showStep(currentStep);
+            }
+        });
+
+        document.querySelectorAll('.petType').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                e.target.closest('.checkbox-option').classList.toggle('selected');
+            });
+        });
+
+        document.querySelectorAll('[data-service]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-service]').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                data.service = btn.dataset.service;
+                nextBtn.disabled = false;
+            });
+        });
+
+        document.querySelectorAll('[data-meetgreet]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-meetgreet]').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                data.meetGreet = btn.dataset.meetgreet;
+                nextBtn.disabled = false;
+            });
+        });
+
+        document.getElementById('startDate').addEventListener('change', (e) => {
+            data.startDate = e.target.value;
+        });
+
+        document.getElementById('endDate').addEventListener('change', (e) => {
+            data.endDate = e.target.value;
+        });
+
+        showStep(0);
+    </script>
+</body>
+</html>
