@@ -777,14 +777,20 @@
             const visits = isOvernight ? numDays : numDays;
             const serviceTotal = perVisit * visits;
 
+            // Count Saturdays and Sundays in the selected range
+            let weekendDays = 0;
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dow = d.getDay();
+                if (dow === 0 || dow === 6) weekendDays++;
+            }
             let meetGreetCost = data.meetGreet === 'yes' ? 25 : 0;
-            let weekendCost = Math.round(serviceTotal * 0.15);
+            let weekendCost = weekendDays * 5;
             let grandTotal = serviceTotal + meetGreetCost + weekendCost;
 
             const label = isOvernight ? 'nights' : 'visits';
             document.getElementById('priceService').textContent = `${visits} ${label} × $${perVisit} = $${serviceTotal}`;
             document.getElementById('priceMeetGreet').textContent = meetGreetCost > 0 ? `$${meetGreetCost}` : '—';
-            document.getElementById('priceWeekend').textContent = weekendCost > 0 ? `+$${weekendCost}` : '—';
+            document.getElementById('priceWeekend').textContent = weekendCost > 0 ? `${weekendDays} day(s) × $5 = +$${weekendCost}` : '—';
             document.getElementById('priceTotal').textContent = `$${grandTotal}`;
         }
 
