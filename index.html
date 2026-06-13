@@ -398,6 +398,24 @@
             margin-top: 4px;
         }
 
+        .cal-day {
+            padding: 8px 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #2C3E50;
+            transition: all 0.15s;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+        .cal-day:hover { background: #f1f4f1; border-color: #4CAF50; }
+        .cal-day.selected { background: #4CAF50; color: white; border-color: #4CAF50; }
+        .cal-day.in-range { background: #d4edda; color: #2C3E50; border-color: transparent; }
+        .cal-day.range-start, .cal-day.range-end { background: #4CAF50; color: white; border-color: #45a049; }
+        .cal-day.past { color: #ccc; cursor: not-allowed; pointer-events: none; }
+        .cal-day.empty { cursor: default; }
+        .cal-header-day { font-size: 11px; font-weight: 600; color: #7f8c8d; padding: 4px 0; }
+
         @media (max-width: 600px) {
             .widget-container {
                 padding: 24px;
@@ -416,7 +434,7 @@
 <body>
     <div class="widget-container">
         <div class="header">
-            <h1>🐕 Book Your Dog Walk</h1>
+            <h1>🐕 Request to Schedule Pet Care</h1>
             <p>Professional dog walking & pet sitting in Austin</p>
         </div>
 
@@ -484,19 +502,23 @@
             <div class="options">
                 <button type="button" class="btn-option" data-service="30min-walk">
                     30-Min Walk
-                    <div class="service-desc">$30 per walk</div>
+                    <div class="service-desc">$30 first dog · +$15 each additional dog</div>
                 </button>
                 <button type="button" class="btn-option" data-service="60min-walk">
                     60-Min Walk
-                    <div class="service-desc">$55 per walk (most popular)</div>
+                    <div class="service-desc">$55 first dog · +$15 each additional dog</div>
                 </button>
-                <button type="button" class="btn-option" data-service="daily-dropins">
-                    Daily Drop-In Visits
-                    <div class="service-desc">$40 per visit</div>
+                <button type="button" class="btn-option" data-service="30min-visit">
+                    30-Min Visit (cats or dogs)
+                    <div class="service-desc">$25 first pet · +$10 each additional pet</div>
+                </button>
+                <button type="button" class="btn-option" data-service="60min-visit">
+                    60-Min Visit (cats or dogs)
+                    <div class="service-desc">$45 first pet · +$15 each additional pet</div>
                 </button>
                 <button type="button" class="btn-option" data-service="overnight-sitting">
                     Overnight Pet Sitting
-                    <div class="service-desc">$85 per night</div>
+                    <div class="service-desc">$135 first dog · +$40 each additional dog · +$20 each additional cat</div>
                 </button>
             </div>
         </div>
@@ -505,12 +527,17 @@
         <div class="question">
             <div class="step-icon">📅</div>
             <h2>What dates do you need service?</h2>
-            <div class="options">
-                <label class="date-label">Start Date</label>
-                <input type="date" id="startDate" class="date-input">
-                <label class="date-label" style="margin-top: 16px;">End Date</label>
-                <input type="date" id="endDate" class="date-input">
+            <p style="color:#7f8c8d;font-size:13px;margin-bottom:14px;">Tap a date to select it, or tap a start and end date to select a range.</p>
+            <div id="calendarWidget">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <button type="button" id="calPrev" style="background:none;border:2px solid #e8e8e8;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:16px;color:#2C3E50;">‹</button>
+                    <span id="calMonthLabel" style="font-weight:600;color:#2C3E50;font-size:15px;"></span>
+                    <button type="button" id="calNext" style="background:none;border:2px solid #e8e8e8;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:16px;color:#2C3E50;">›</button>
+                </div>
+                <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;"></div>
             </div>
+            <div id="calSelectedLabel" style="margin-top:14px;font-size:13px;color:#4CAF50;font-weight:500;min-height:20px;"></div>
+            <div class="error" id="dateError"></div>
         </div>
 
         <!-- Question 7: Meet & Greet -->
@@ -527,7 +554,7 @@
         <!-- Question 8: Review & Submit -->
         <div class="question">
             <div class="step-icon">✅</div>
-            <h2>Review your booking</h2>
+            <h2 style="text-align:center;">Review your request</h2>
             <div class="review-section show">
                 <div class="review-item">
                     <label>Location:</label>
@@ -577,7 +604,7 @@
             <div class="confirmation">
                 📧 Confirmation email sent to<br><strong>catieauchter@gmail.com</strong>
             </div>
-            <p>We'll reach out within 24 hours to confirm your appointment and answer any questions.</p>
+            <p>Your booking request will be reviewed, and our staff will reach out as soon as possible. Please note that same day appointments are only accepted by current clients.</p>
         </div>
 
         <!-- Buttons -->
@@ -589,7 +616,7 @@
 
     <script>
         // Data
-        const DENVER_PREFIXES = ['80', '81', '82'];
+        const VALID_ZIPS = ['78701','78702','78703','78704','78705','78712','78721','78722','78723','78741','78751','78752','78756'];
         const data = {
             zip: '',
             pets: [],
@@ -645,6 +672,11 @@
                     document.getElementById('zipError').classList.add('show');
                     return false;
                 }
+                if (!VALID_ZIPS.includes(zip)) {
+                    document.getElementById('zipError').textContent = 'Sorry, we don\'t currently serve that zip code.';
+                    document.getElementById('zipError').classList.add('show');
+                    return false;
+                }
                 data.zip = zip;
                 return true;
             }
@@ -679,8 +711,11 @@
             }
 
             if (currentStep === 5) {
-                if (!data.startDate || !data.endDate) return false;
-                if (new Date(data.startDate) > new Date(data.endDate)) return false;
+                if (!data.startDate || !data.endDate) {
+                    document.getElementById('dateError').textContent = 'Please select at least one date';
+                    document.getElementById('dateError').classList.add('show');
+                    return false;
+                }
                 return true;
             }
 
@@ -706,6 +741,24 @@
             calculatePricing();
         }
 
+        function calcServiceTotal(service, dogs, cats) {
+            // Returns per-visit cost based on service and pet counts
+            if (service === '30min-walk') {
+                return 30 + Math.max(0, dogs - 1) * 15;
+            } else if (service === '60min-walk') {
+                return 55 + Math.max(0, dogs - 1) * 15;
+            } else if (service === '30min-visit') {
+                const total = dogs + cats;
+                return 25 + Math.max(0, total - 1) * 10;
+            } else if (service === '60min-visit') {
+                const total = dogs + cats;
+                return 45 + Math.max(0, total - 1) * 15;
+            } else if (service === 'overnight-sitting') {
+                return 135 + Math.max(0, dogs - 1) * 40 + cats * 20;
+            }
+            return 0;
+        }
+
         function calculatePricing() {
             if (!data.startDate || !data.endDate || !data.service) {
                 document.getElementById('priceService').textContent = '—';
@@ -718,31 +771,18 @@
             const start = new Date(data.startDate);
             const end = new Date(data.endDate);
             const numDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
-            const totalPets = data.dogQty + data.catQty;
 
-            let servicePrice = 0;
-            let visits = 0;
+            const perVisit = calcServiceTotal(data.service, data.dogQty, data.catQty);
+            const isOvernight = data.service === 'overnight-sitting';
+            const visits = isOvernight ? numDays : numDays;
+            const serviceTotal = perVisit * visits;
 
-            if (data.service === '30min-walk') {
-                servicePrice = 30;
-                visits = numDays * totalPets;
-            } else if (data.service === '60min-walk') {
-                servicePrice = 55;
-                visits = numDays * totalPets;
-            } else if (data.service === 'daily-dropins') {
-                servicePrice = 40;
-                visits = numDays * totalPets;
-            } else if (data.service === 'overnight-sitting') {
-                servicePrice = 85;
-                visits = numDays;
-            }
-
-            let serviceTotal = servicePrice * visits;
             let meetGreetCost = data.meetGreet === 'yes' ? 25 : 0;
             let weekendCost = Math.round(serviceTotal * 0.15);
             let grandTotal = serviceTotal + meetGreetCost + weekendCost;
 
-            document.getElementById('priceService').textContent = visits > 0 ? `${visits} × $${servicePrice} = $${serviceTotal}` : '—';
+            const label = isOvernight ? 'nights' : 'visits';
+            document.getElementById('priceService').textContent = `${visits} ${label} × $${perVisit} = $${serviceTotal}`;
             document.getElementById('priceMeetGreet').textContent = meetGreetCost > 0 ? `$${meetGreetCost}` : '—';
             document.getElementById('priceWeekend').textContent = weekendCost > 0 ? `+$${weekendCost}` : '—';
             document.getElementById('priceTotal').textContent = `$${grandTotal}`;
@@ -799,15 +839,96 @@
             });
         });
 
-        document.getElementById('startDate').addEventListener('change', (e) => {
-            data.startDate = e.target.value;
-        });
+        // Calendar
+        let calYear, calMonth, calRangeStart = null, calRangeEnd = null;
 
-        document.getElementById('endDate').addEventListener('change', (e) => {
-            data.endDate = e.target.value;
+        function toYMD(d) {
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calGrid');
+            const label = document.getElementById('calMonthLabel');
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            label.textContent = months[calMonth] + ' ' + calYear;
+            grid.innerHTML = '';
+            ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+                const h = document.createElement('div');
+                h.className = 'cal-header-day'; h.textContent = d;
+                grid.appendChild(h);
+            });
+            const today = new Date(); today.setHours(0,0,0,0);
+            const firstDay = new Date(calYear, calMonth, 1).getDay();
+            const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+            for (let i = 0; i < firstDay; i++) {
+                const blank = document.createElement('div'); blank.className = 'cal-day empty'; grid.appendChild(blank);
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cell = document.createElement('div');
+                cell.className = 'cal-day';
+                cell.textContent = d;
+                const thisDate = new Date(calYear, calMonth, d);
+                if (thisDate < today) { cell.classList.add('past'); }
+                else {
+                    const ymd = toYMD(thisDate);
+                    if (calRangeStart && calRangeEnd) {
+                        if (ymd === calRangeStart) cell.classList.add('range-start');
+                        else if (ymd === calRangeEnd) cell.classList.add('range-end');
+                        else if (ymd > calRangeStart && ymd < calRangeEnd) cell.classList.add('in-range');
+                    } else if (calRangeStart && ymd === calRangeStart) {
+                        cell.classList.add('selected');
+                    }
+                    cell.addEventListener('click', () => onCalClick(ymd));
+                }
+                grid.appendChild(cell);
+            }
+            updateCalLabel();
+        }
+
+        function onCalClick(ymd) {
+            if (!calRangeStart || calRangeEnd) {
+                // Start fresh
+                calRangeStart = ymd; calRangeEnd = null;
+                data.startDate = ymd; data.endDate = '';
+            } else {
+                if (ymd < calRangeStart) {
+                    calRangeEnd = calRangeStart; calRangeStart = ymd;
+                } else {
+                    calRangeEnd = ymd;
+                }
+                data.startDate = calRangeStart; data.endDate = calRangeEnd;
+            }
+            renderCalendar();
+        }
+
+        function updateCalLabel() {
+            const el = document.getElementById('calSelectedLabel');
+            if (calRangeStart && calRangeEnd) {
+                el.textContent = 'Selected: ' + calRangeStart + ' → ' + calRangeEnd;
+            } else if (calRangeStart) {
+                el.textContent = 'Start: ' + calRangeStart + ' — tap another date to set end date';
+            } else {
+                el.textContent = '';
+            }
+        }
+
+        function initCalendar() {
+            const now = new Date();
+            calYear = now.getFullYear(); calMonth = now.getMonth();
+            calRangeStart = null; calRangeEnd = null;
+            data.startDate = ''; data.endDate = '';
+            renderCalendar();
+        }
+
+        document.getElementById('calPrev').addEventListener('click', () => {
+            calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
+        });
+        document.getElementById('calNext').addEventListener('click', () => {
+            calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
         });
 
         showStep(0);
+        initCalendar();
     </script>
 </body>
 </html>
